@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <!-- HEADER -->
   <header class="app-header">
     <div class="header-left">
       <div class="app-logo">⚡</div>
@@ -25,82 +25,29 @@
     </nav>
   </header>
 
-  <!-- ── LOGIN MODAL ────────────────────────────────────────── -->
+  <!-- LOGIN -->
   <div class="login-modal" id="loginModal">
     <div class="login-card">
       <h2>🔐 EDITOR LOGIN</h2>
-      <p>Masukkan password untuk akses editor</p>
       <input type="password" id="passwordInput" placeholder="Password..."
-             onkeydown="if(event.key==='Enter') checkLogin()">
+        onkeydown="if(event.key==='Enter') checkLogin()">
       <button onclick="checkLogin()">MASUK</button>
       <div class="login-error" id="loginError"></div>
     </div>
   </div>
 
-  <!-- ── EDITOR LAYOUT ──────────────────────────────────────── -->
+  <!-- MAIN -->
   <div class="editor-layout" id="editorLayout" style="display:none">
 
-    <!-- LEFT PANEL -->
-    <aside class="editor-sidebar">
-
-      <section class="sidebar-section">
-        <h3>LAYOUT</h3>
-        <button class="btn-primary" onclick="showUploadDialog()">📁 Upload Gambar</button>
-        <button class="btn-secondary" onclick="addLayout()" style="font-size:0.72rem">+ Tambah Layout</button>
-        <div class="sidebar-list" id="layoutList"></div>
-      </section>
-
-      <section class="sidebar-section">
-        <h3>HOTSPOT <span id="hotspotCount" style="color:var(--text-dim);font-size:0.65rem"></span></h3>
-        <!-- Shape picker dropdown -->
-        <div class="shape-picker-wrap" id="shapePickerWrap">
-          <button class="btn-primary" style="width:100%" onclick="toggleShapePicker()">+ Tambah Hotspot ▾</button>
-          <div class="shape-picker-dropdown" id="shapePickerDropdown">
-            <div class="shape-option" onclick="addHotspotWithShape('default')">
-              <div class="shape-option-preview">
-                <svg width="20" height="20" viewBox="0 0 20 20">
-                  <circle cx="10" cy="10" r="8" fill="none" stroke="#00ff88" stroke-width="1.5"/>
-                </svg>
-              </div>
-              <span>Lingkaran (Default)</span>
-            </div>
-            <div class="shape-option" onclick="addHotspotWithShape('manual-valve')">
-              <div class="shape-option-preview">
-                <svg width="22" height="22" viewBox="0 0 22 22">
-                  <!-- Manual valve symbol: bowtie/butterfly shape -->
-                  <polygon points="11,11 3,4 3,18" fill="white" stroke="white" stroke-width="0.5"/>
-                  <polygon points="11,11 19,4 19,18" fill="white" stroke="white" stroke-width="0.5"/>
-                  <line x1="11" y1="2" x2="11" y2="6" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                  <rect x="8" y="1" width="6" height="2" rx="1" fill="white"/>
-                </svg>
-              </div>
-              <span>Manual Valve</span>
-            </div>
-          </div>
-        </div>
-        <div class="sidebar-list" id="hotspotList"></div>
-      </section>
-
-      <section class="sidebar-section">
-        <h3>DATA PERALATAN</h3>
-        <button class="btn-primary" onclick="openEquipModal()">+ Tambah Data</button>
-        <input type="text" id="searchEquipment" placeholder="Cari peralatan..."
-               oninput="filterEquipment()" style="margin-top:0.3rem">
-        <div class="sidebar-list" id="equipmentList" style="max-height:180px"></div>
-      </section>
-
-    </aside>
-
-    <!-- MAIN CANVAS -->
     <main class="editor-canvas-area">
       <div class="editor-toolbar">
-        <button class="tool-btn active" id="toolSelect" onclick="setTool('select')">↖ Pilih</button>
-        <button class="tool-btn" id="toolAdd"    onclick="setTool('add')">+ Tambah</button>
-        <button class="tool-btn" id="toolMove"   onclick="setTool('move')">✥ Geser</button>
-        <button class="tool-btn danger" onclick="deleteSelected()">🗑 Hapus</button>
+        <button onclick="setTool('select')">↖ Pilih</button>
+        <button onclick="setTool('add')">+ Tambah</button>
+        <button onclick="setTool('move')">✥ Geser</button>
+        <button onclick="deleteSelected()">🗑 Hapus</button>
         <div class="toolbar-spacer"></div>
-        <button class="btn-success"    onclick="saveAll()">💾 Simpan</button>
-        <button class="btn-secondary"  onclick="cancelChanges()">✕ Batal</button>
+        <button onclick="saveAll()">💾 Simpan</button>
+        <button onclick="cancelChanges()">✕ Batal</button>
       </div>
 
       <div class="editor-canvas-wrapper" id="canvasWrapper">
@@ -108,94 +55,41 @@
           <div class="canvas-bg" id="canvasBg"></div>
           <div class="canvas-hotspots" id="canvasHotspots"></div>
         </div>
-        <div class="canvas-hint" id="canvasHint">Pilih tool lalu klik canvas untuk tambah hotspot, atau drag hotspot untuk memindahkan</div>
       </div>
     </main>
 
-    <!-- RIGHT PANEL -->
-    <aside class="editor-properties">
-
-      <section class="sidebar-section">
-        <h3>PROPERTI HOTSPOT</h3>
-        <div id="hotspotProperties">
-          <p class="no-selection">Pilih hotspot untuk edit</p>
-        </div>
-      </section>
-
-      <section class="sidebar-section" style="margin-top:0.5rem">
-        <h3>INFO LAYOUT</h3>
-        <div id="layoutInfo">
-          <p class="no-selection">Pilih layout</p>
-        </div>
-      </section>
-
-      <section class="sidebar-section" style="margin-top:0.5rem">
-        <h3>UBAH PASSWORD</h3>
-        <div class="form-group">
-          <label>Password Baru</label>
-          <input type="password" id="newPassword" placeholder="Password baru...">
-        </div>
-        <div class="form-group">
-          <label>Konfirmasi</label>
-          <input type="password" id="confirmPassword" placeholder="Ulangi password...">
-        </div>
-        <button class="btn-primary" onclick="changePassword()" style="width:100%">Ubah Password</button>
-      </section>
-
-    </aside>
   </div>
 
-  <!-- ── UPLOAD DIALOG (hidden file input) ──────────────────── -->
-  <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileUpload(event)">
+  <!-- FILE INPUT -->
+  <input type="file" id="fileInput" accept="image/*" style="display:none">
 
-  <!-- ── EQUIPMENT MODAL ────────────────────────────────────── -->
-  <div class="modal-overlay" id="equipModal">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeEquipModal()">×</button>
-      <h3 id="equipModalTitle">TAMBAH PERALATAN</h3>
-      <input type="hidden" id="equipId">
-      <div class="form-group">
-        <label>Nama Peralatan</label>
-        <input type="text" id="equipName" placeholder="Nama peralatan...">
-      </div>
-      <div class="form-group">
-        <label>Kode KKS</label>
-        <input type="text" id="equipKks" placeholder="XX-XXX-000">
-      </div>
-      <div class="form-group">
-        <label>Lokasi</label>
-        <input type="text" id="equipLocation" placeholder="Contoh: Turbine Hall Lt.1">
-      </div>
-      <div class="form-group">
-        <label>Tipe</label>
-        <select id="equipType">
-          <option value="Equipment">Equipment</option>
-          <option value="Valve">Valve</option>
-          <option value="Sensor">Sensor</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Keterangan</label>
-        <textarea id="equipDesc" rows="3" placeholder="Deskripsi peralatan..."></textarea>
-      </div>
-      <div class="form-group">
-        <label>Gambar Keterangan</label>
-        <div id="equipImgPreview" style="margin-bottom:0.4rem"></div>
-        <button type="button" onclick="document.getElementById('equipImgInput').click()"
-          style="width:100%;background:rgba(0,170,255,0.1);border:1px solid var(--accent-blue);color:var(--accent-blue);border-radius:6px;padding:0.35rem;cursor:pointer;font-size:0.72rem;font-family:var(--font-mono)">📷 Upload Gambar</button>
-        <input type="file" id="equipImgInput" accept="image/*" style="display:none" onchange="handleEquipImageUpload(event)">
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeEquipModal()">Batal</button>
-        <button class="btn-success"   onclick="saveEquipment()">Simpan</button>
+  <!-- HOTSPOT MODAL -->
+  <div id="hotspotModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button onclick="closeHotspotModal()">×</button>
+      <h3>EDIT HOTSPOT</h3>
+
+      <input type="text" id="hsNama" placeholder="Nama Peralatan">
+      <input type="text" id="hsKks" placeholder="Kode KKS">
+
+      <select id="hsTipe">
+        <option value="valve">Valve</option>
+        <option value="equipment">Equipment</option>
+        <option value="sensor">Sensor</option>
+      </select>
+
+      <textarea id="hsDesc" placeholder="Keterangan"></textarea>
+
+      <div>
+        <button onclick="deleteHotspot()">🗑 Hapus</button>
+        <button onclick="saveHotspot()">💾 Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- ── TOAST ──────────────────────────────────────────────── -->
-  <div class="toast" id="toast"></div>
-
+  <!-- SCRIPT -->
   <script src="data.js"></script>
   <script src="editor.js"></script>
+
 </body>
 </html>
