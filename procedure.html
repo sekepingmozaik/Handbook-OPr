@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prosedur — DCS PLTU Interaktif</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">⚡</div>
+      <div>
+        <div class="app-title">DCS PLTU INTERAKTIF</div>
+        <div class="app-subtitle">Prosedur Operasi</div>
+      </div>
+    </div>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-btn">PETA</a>
+      <a href="equipment.html" class="nav-btn">PERALATAN</a>
+      <a href="procedure.html" class="nav-btn active">PROSEDUR</a>
+      <a href="editor.html" class="nav-btn editor-btn">EDITOR</a>
+    </nav>
+  </header>
+
+  <!-- ── CONTENT ────────────────────────────────────────────── -->
+  <div class="page-content">
+    <div class="page-title">
+      📋 PROSEDUR OPERASI PLTU
+    </div>
+
+    <!-- Tabs -->
+    <div class="proc-tabs">
+      <button class="proc-tab active" id="tabStartup"   onclick="switchTab('startup')">▶ START UP</button>
+      <button class="proc-tab shutdown-tab" id="tabShutdown" onclick="switchTab('shutdown')">■ SHUTDOWN</button>
+    </div>
+
+    <!-- Actions bar -->
+    <div class="proc-actions-bar">
+      <span id="procInfo" style="font-size:0.8rem;color:var(--text-secondary)"></span>
+      <div style="flex:1"></div>
+      <button class="btn-primary"   onclick="addStep()">+ Tambah Langkah</button>
+      <button class="btn-secondary" onclick="window.print()">🖨 Cetak</button>
+    </div>
+
+    <!-- Steps list -->
+    <div class="proc-list" id="procList">
+      <!-- Diisi oleh JS -->
+    </div>
+  </div>
+
+  <!-- ── MODAL EDIT STEP ────────────────────────────────────── -->
+  <div class="modal-overlay" id="stepModal">
+    <div class="modal-card" style="max-width:560px">
+      <button class="modal-close" onclick="closeStepModal()">×</button>
+      <h3 id="stepModalTitle">EDIT LANGKAH</h3>
+      <input type="hidden" id="stepIndex">
+      <div class="form-group">
+        <label>Judul Langkah *</label>
+        <input type="text" id="stepTitle" placeholder="Judul langkah...">
+      </div>
+      <div class="form-group">
+        <label>Deskripsi *</label>
+        <textarea id="stepDesc" rows="4" placeholder="Deskripsi langkah secara detail..."></textarea>
+      </div>
+
+      <!-- Lampiran Gambar -->
+      <div class="form-group">
+        <label>Lampiran Gambar</label>
+        <div id="stepImgPreview" style="margin-bottom:0.4rem"></div>
+        <button type="button" onclick="document.getElementById('stepImgInput').click()"
+          style="width:100%;background:rgba(0,170,255,0.1);border:1px solid var(--accent-blue);color:var(--accent-blue);border-radius:6px;padding:0.35rem;cursor:pointer;font-size:0.72rem;font-family:var(--font-mono)">🖼 Upload Gambar</button>
+        <input type="file" id="stepImgInput" accept="image/*" style="display:none" onchange="handleStepImgUpload(event)">
+      </div>
+
+      <!-- Lampiran PDF -->
+      <div class="form-group">
+        <label>Lampiran PDF</label>
+        <div id="stepPdfPreview" style="margin-bottom:0.4rem"></div>
+        <button type="button" onclick="document.getElementById('stepPdfInput').click()"
+          style="width:100%;background:rgba(255,136,0,0.1);border:1px solid var(--accent-orange);color:var(--accent-orange);border-radius:6px;padding:0.35rem;cursor:pointer;font-size:0.72rem;font-family:var(--font-mono)">📄 Upload PDF</button>
+        <input type="file" id="stepPdfInput" accept="application/pdf" style="display:none" onchange="handleStepPdfUpload(event)">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeStepModal()">Batal</button>
+        <button class="btn-success"   onclick="saveStep()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ──────────────────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="data.js"></script>
+  <script>
+  // ── STATE ────────────────────────────────────────────────────
+  var procData  = null;
+  var activeTab = 'startup';
+  var _stepImgTemp = null;
+  var _stepPdfTemp = null; // { name, data (base64) }
+
+  // ── INIT ─────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    var saved = localStorage.getItem('dcs_pltu_data');
+    if (saved) {
+      try { procData = JSON.parse(saved); }
+      catch(e) { procData = JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+    } else {
+      procData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+    renderProc();
+  });
+
+  // ── UTILITY ──────────────────────────────────────────────────
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function saveData() {
+    localStorage.setItem('dcs_pltu_data', JSON.stringify(procData));
+  }
+
+  function showToast(msg, isError) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(function() { t.className = 'toast' + (isError ? ' error' : ''); }, 2800);
+  }
+
+  // ── SWITCH TAB ───────────────────────────────────────────────
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabStartup').classList.toggle('active',  tab === 'startup');
+    document.getElementById('tabShutdown').classList.toggle('active', tab === 'shutdown');
+    renderProc();
+  }
+
+  // ── RENDER PROCEDURE ─────────────────────────────────────────
+  function renderProc() {
+    var steps = procData.procedures[activeTab] || [];
+    var list  = document.getElementById('procList');
+    var info  = document.getElementById('procInfo');
+    var label = activeTab === 'startup' ? 'Start Up' : 'Shutdown';
+
+    info.textContent = label + ': ' + steps.length + ' langkah';
+
+    if (steps.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-dim);font-style:italic">Belum ada langkah prosedur. Klik "+ Tambah Langkah" untuk menambahkan.</div>';
+      return;
+    }
+
+    list.innerHTML = steps.map(function(s, i) {
+      var typeClass = activeTab === 'shutdown' ? ' shutdown' : '';
+
+      // Attachment badges
+      var attachments = '';
+      if (s.image) {
+        attachments += '<div style="margin-top:0.6rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;max-height:160px">' +
+          '<img src="' + s.image + '" style="width:100%;object-fit:contain;max-height:160px;display:block;cursor:pointer" onclick="openImgViewer(\'' + i + '\')" title="Klik untuk perbesar">' +
+        '</div>';
+      }
+      if (s.pdf) {
+        attachments += '<div style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem;background:rgba(255,136,0,0.08);border:1px solid rgba(255,136,0,0.3);border-radius:6px;padding:0.4rem 0.6rem">' +
+          '<span style="font-size:1rem">📄</span>' +
+          '<span style="font-size:0.78rem;color:var(--accent-orange);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(s.pdf.name) + '</span>' +
+          '<a href="' + s.pdf.data + '" download="' + escHtml(s.pdf.name) + '" ' +
+            'style="font-size:0.7rem;color:var(--accent-orange);text-decoration:none;border:1px solid rgba(255,136,0,0.4);border-radius:4px;padding:0.15rem 0.4rem">⬇ Unduh</a>' +
+        '</div>';
+      }
+
+      return '<div class="proc-step' + typeClass + '" id="step_' + i + '">' +
+        '<div class="proc-step-num">' + s.step + '</div>' +
+        '<div class="proc-step-body">' +
+          '<div class="proc-step-title">' + escHtml(s.title) + '</div>' +
+          '<div class="proc-step-desc">' + escHtml(s.description) + '</div>' +
+          attachments +
+          '<div class="proc-step-actions">' +
+            '<button onclick="openStepModal(' + i + ')" ' +
+              'style="background:none;border:1px solid var(--accent-blue);color:var(--accent-blue);border-radius:4px;padding:0.2rem 0.6rem;cursor:pointer;font-size:0.72rem">✎ Edit</button>' +
+            '<button onclick="moveStep(' + i + ',-1)" ' +
+              (i === 0 ? 'disabled ' : '') +
+              'style="background:none;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.72rem;' +
+              (i === 0 ? 'opacity:0.3;cursor:not-allowed' : '') + '">↑</button>' +
+            '<button onclick="moveStep(' + i + ',1)" ' +
+              (i === steps.length-1 ? 'disabled ' : '') +
+              'style="background:none;border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.72rem;' +
+              (i === steps.length-1 ? 'opacity:0.3;cursor:not-allowed' : '') + '">↓</button>' +
+            '<button onclick="deleteStep(' + i + ')" ' +
+              'style="background:none;border:1px solid var(--accent-red);color:var(--accent-red);border-radius:4px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.72rem">🗑</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ── IMAGE VIEWER ─────────────────────────────────────────────
+  function openImgViewer(stepIndex) {
+    var steps = procData.procedures[activeTab];
+    var s = steps[stepIndex];
+    if (!s || !s.image) return;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    overlay.innerHTML = '<img src="' + s.image + '" style="max-width:95vw;max-height:95vh;object-fit:contain;border-radius:8px">';
+    overlay.onclick = function() { document.body.removeChild(overlay); };
+    document.body.appendChild(overlay);
+  }
+
+  // ── ADD STEP ─────────────────────────────────────────────────
+  function addStep() {
+    var steps = procData.procedures[activeTab];
+    var newStep = {
+      step: steps.length + 1,
+      title: 'Langkah Baru',
+      description: 'Deskripsi langkah ini.'
+    };
+    steps.push(newStep);
+    saveData();
+    renderProc();
+    openStepModal(steps.length - 1);
+  }
+
+  // ── MOVE STEP ────────────────────────────────────────────────
+  function moveStep(index, dir) {
+    var steps = procData.procedures[activeTab];
+    var newIdx = index + dir;
+    if (newIdx < 0 || newIdx >= steps.length) return;
+    var tmp = steps[index];
+    steps[index] = steps[newIdx];
+    steps[newIdx] = tmp;
+    // Renumber
+    steps.forEach(function(s, i) { s.step = i + 1; });
+    saveData();
+    renderProc();
+  }
+
+  // ── DELETE STEP ───────────────────────────────────────────────
+  function deleteStep(index) {
+    var steps = procData.procedures[activeTab];
+    if (!confirm('Hapus langkah "' + steps[index].title + '"?')) return;
+    steps.splice(index, 1);
+    steps.forEach(function(s, i) { s.step = i + 1; });
+    saveData();
+    renderProc();
+    showToast('Langkah dihapus');
+  }
+
+  // ── MODAL ────────────────────────────────────────────────────
+  function openStepModal(index) {
+    var steps = procData.procedures[activeTab];
+    var s = steps[index];
+    _stepImgTemp = s.image || null;
+    _stepPdfTemp = s.pdf   || null;
+    document.getElementById('stepIndex').value = index;
+    document.getElementById('stepTitle').value = s.title;
+    document.getElementById('stepDesc').value  = s.description;
+    document.getElementById('stepModalTitle').textContent = 'EDIT LANGKAH ' + s.step;
+    renderStepImgPreview();
+    renderStepPdfPreview();
+    document.getElementById('stepModal').classList.add('active');
+    document.getElementById('stepTitle').focus();
+  }
+
+  function renderStepImgPreview() {
+    var p = document.getElementById('stepImgPreview');
+    if (!p) return;
+    if (_stepImgTemp) {
+      p.innerHTML = '<div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;max-height:100px">' +
+        '<img src="' + _stepImgTemp + '" style="width:100%;object-fit:contain;max-height:100px;display:block">' +
+        '<button onclick="_stepImgTemp=null;renderStepImgPreview()" ' +
+          'style="width:100%;background:rgba(255,68,68,0.1);border:none;border-top:1px solid var(--border);color:var(--accent-red);font-size:0.7rem;padding:0.2rem;cursor:pointer">✕ Hapus Gambar</button>' +
+      '</div>';
+    } else {
+      p.innerHTML = '<div style="border:1px dashed var(--border);border-radius:6px;padding:0.35rem;text-align:center;color:var(--text-dim);font-size:0.72rem">Belum ada gambar</div>';
+    }
+  }
+
+  function renderStepPdfPreview() {
+    var p = document.getElementById('stepPdfPreview');
+    if (!p) return;
+    if (_stepPdfTemp) {
+      p.innerHTML = '<div style="display:flex;align-items:center;gap:0.5rem;background:rgba(255,136,0,0.08);border:1px solid rgba(255,136,0,0.3);border-radius:6px;padding:0.35rem 0.6rem">' +
+        '<span>📄</span>' +
+        '<span style="font-size:0.75rem;color:var(--accent-orange);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(_stepPdfTemp.name) + '</span>' +
+        '<button onclick="_stepPdfTemp=null;renderStepPdfPreview()" ' +
+          'style="background:none;border:none;color:var(--accent-red);cursor:pointer;font-size:0.8rem;padding:0">✕</button>' +
+      '</div>';
+    } else {
+      p.innerHTML = '<div style="border:1px dashed var(--border);border-radius:6px;padding:0.35rem;text-align:center;color:var(--text-dim);font-size:0.72rem">Belum ada PDF</div>';
+    }
+  }
+
+  function handleStepImgUpload(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { showToast('File harus berupa gambar', true); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) { _stepImgTemp = e.target.result; renderStepImgPreview(); showToast('Gambar siap disimpan'); };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function handleStepPdfUpload(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') { showToast('File harus berformat PDF', true); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('Ukuran PDF maksimal 5 MB', true); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      _stepPdfTemp = { name: file.name, data: e.target.result };
+      renderStepPdfPreview();
+      showToast('PDF siap disimpan');
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  function closeStepModal() {
+    document.getElementById('stepModal').classList.remove('active');
+  }
+
+  function saveStep() {
+    var title = document.getElementById('stepTitle').value.trim();
+    var desc  = document.getElementById('stepDesc').value.trim();
+    var index = parseInt(document.getElementById('stepIndex').value, 10);
+
+    if (!title) { showToast('Judul langkah wajib diisi', true); return; }
+    if (!desc)  { showToast('Deskripsi wajib diisi', true); return; }
+
+    var steps = procData.procedures[activeTab];
+    steps[index].title       = title;
+    steps[index].description = desc;
+    steps[index].image       = _stepImgTemp || null;
+    steps[index].pdf         = _stepPdfTemp || null;
+
+    saveData();
+    closeStepModal();
+    renderProc();
+    showToast('Langkah berhasil disimpan');
+  }
+
+  // Close modal on overlay click / Escape
+  document.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('stepModal')) closeStepModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeStepModal();
+  });
+  </script>
+</body>
+</html>

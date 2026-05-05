@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DCS PLTU Interaktif</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">⚡</div>
+      <div>
+        <div class="app-title">DCS PLTU INTERAKTIF</div>
+        <div class="app-subtitle">Pengenalan DCS PLTU</div>
+      </div>
+    </div>
+    <nav class="main-nav">
+      <a href="index.html" class="nav-btn active">PETA</a>
+      <a href="equipment.html" class="nav-btn">PERALATAN</a>
+      <a href="procedure.html" class="nav-btn">PROSEDUR</a>
+      <a href="editor.html" class="nav-btn editor-btn">EDITOR</a>
+    </nav>
+  </header>
+
+  <!-- ── LAYOUT TABS ────────────────────────────────────────── -->
+  <div class="layout-tabs" id="layoutTabs">
+    <!-- Diisi oleh JS -->
+  </div>
+
+  <!-- ── MAP WRAPPER ────────────────────────────────────────── -->
+  <div class="map-wrapper" id="mapWrapper">
+    <div class="map-container" id="mapContainer">
+      <div class="map-bg" id="mapBg"></div>
+      <div class="hotspots-layer" id="hotspotsLayer"></div>
+    </div>
+
+    <!-- Zoom controls -->
+    <div class="zoom-controls">
+      <button onclick="zoomIn()" title="Zoom In">+</button>
+      <button onclick="zoomReset()" title="Reset Zoom">⊙</button>
+      <button onclick="zoomOut()" title="Zoom Out">−</button>
+    </div>
+  </div>
+
+  <!-- ── POPUP OVERLAY ──────────────────────────────────────── -->
+  <div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+  <div class="popup-card" id="popupCard">
+    <button class="popup-close" onclick="closePopup()">×</button>
+    <div class="popup-type-badge" id="popupType"></div>
+    <h3 class="popup-name" id="popupName"></h3>
+    <div class="popup-kks" id="popupKks"></div>
+    <div class="popup-location" id="popupLocation" style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.5rem;display:none">
+      📍 <span id="popupLocationText"></span>
+    </div>
+    <p class="popup-desc" id="popupDesc"></p>
+    <div id="popupImage" style="display:none;margin-top:0.75rem;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <img id="popupImageEl" src="" alt="Gambar peralatan" style="width:100%;object-fit:contain;max-height:180px;display:block;cursor:zoom-in" onclick="openPopupImgViewer()">
+    </div>
+    <div class="popup-footer">
+      <span class="popup-hint">Klik di luar untuk menutup</span>
+    </div>
+  </div>
+
+  <!-- ── IMAGE VIEWER OVERLAY ───────────────────────────────── -->
+  <div id="imgViewerOverlay" onclick="closeImgViewer()"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+    <img id="imgViewerEl" src="" style="max-width:95vw;max-height:95vh;object-fit:contain;border-radius:8px">
+  </div>
+
+  <!-- ── LEGEND ─────────────────────────────────────────────── -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot valve"></span> Valve</div>
+    <div class="legend-item"><span class="legend-dot equipment"></span> Equipment</div>
+    <div class="legend-item"><span class="legend-dot sensor"></span> Sensor</div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
