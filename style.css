@@ -833,13 +833,13 @@ label {
   display: grid;
   grid-template-columns: 260px 1fr 280px;
   height: calc(100vh - 56px);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .editor-sidebar {
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
-  overflow-y: auto;
+  overflow-y: visible;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -849,7 +849,7 @@ label {
 .editor-properties {
   background: var(--bg-secondary);
   border-left: 1px solid var(--border);
-  overflow-y: auto;
+  overflow-y: visible;
   padding: 0.75rem;
 }
 
@@ -877,7 +877,7 @@ label {
 .editor-canvas-area {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   background: var(--bg-primary);
 }
 
@@ -920,7 +920,7 @@ label {
 
 .editor-canvas-wrapper {
   flex: 1;
-  overflow: auto;
+  overflow: visible;
   position: relative;
   cursor: default;
 }
@@ -1054,7 +1054,7 @@ label {
   box-shadow: var(--shadow);
   z-index: 200;
   min-width: 180px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .shape-picker-dropdown.open { display: block; }
