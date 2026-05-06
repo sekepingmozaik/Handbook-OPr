@@ -130,7 +130,7 @@ body {
   padding: 0.5rem 1rem;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
+  overflow-x: visible;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -872,6 +872,19 @@ label {
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--border);
 }
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
 /* ── EDITOR CANVAS ────────────────────────────────────────────── */
 .editor-canvas-area {
@@ -1036,7 +1049,19 @@ label {
   animation: none;
   box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
 }
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 /* ── SHAPE PICKER DROPDOWN ────────────────────────────────────── */
 .shape-picker-wrap {
   position: relative;
@@ -1083,7 +1108,19 @@ label {
   justify-content: center;
   flex-shrink: 0;
 }
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
 
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 /* ── SIDEBAR LISTS ────────────────────────────────────────────── */
 .sidebar-list { display: flex; flex-direction: column; gap: 0.3rem; max-height: 200px; overflow-y: auto; }
 
@@ -1117,6 +1154,19 @@ label {
   font-style: italic;
   text-align: center;
   padding: 1rem 0;
+}
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 /* ── LOGIN MODAL ──────────────────────────────────────────────── */
