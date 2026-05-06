@@ -685,6 +685,19 @@ label {
 .type-badge.equipment { background: rgba(0,255,136,0.1);   color: var(--accent-green); border: 1px solid rgba(0,255,136,0.3); }
 .type-badge.sensor    { background: rgba(255,255,0,0.1);   color: #ffff66;             border: 1px solid rgba(255,255,0,0.3); }
 
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 /* ── PAGE LAYOUT ──────────────────────────────────────────────── */
 .page-content {
   padding: 1.5rem;
@@ -1145,7 +1158,7 @@ label {
   flex-shrink: 0;
 }
 
-.sidebar-list-item .item-name { flex: 1; font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-list-item .item-name { flex: 1; font-size: 0.78rem; overflow: visible; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar-list-item .item-kks  { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent-orange); }
 
 .no-selection {
